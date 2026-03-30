@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .login-container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .dashboard-container {
+      display: none;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-top: 20px;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    button {
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    button:hover {
+      background-color: #3367D6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .action-btn {
+      padding: 6px 12px;
+      margin-right: 5px;
+      font-size: 14px;
+    }
+    .edit-btn {
+      background-color: #FFC107;
+    }
+    .edit-btn:hover {
+      background-color: #FFB300;
+    }
+    .delete-btn {
+      background-color: #F44336;
+    }
+    .delete-btn:hover {
+      background-color: #D32F2F;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #dff0d8;
+      color: #3c763d;
+    }
+    .error {
+      background-color: #f2dede;
+      color: #a94442;
+    }
+    #google-signin {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      color: #757575;
+      border: 1px solid #ddd;
+      padding: 10px 20px;
+    }
+    #google-signin img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+    .logout-btn {
+      background-color: #f44336;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    .student-photo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    .no-photo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #ddd;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+      line-height: 50px;
+      text-align: center;
+      color: #777;
+      font-size: 20px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 5px;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: black;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .photo-preview {
+      margin: 15px 0;
+      text-align: center;
+    }
+    .photo-preview img {
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .edit-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .edit-actions button {
+      flex: 1;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="login-container" id="loginContainer">
+      <h2>Admin Login</h2>
+      <p>Sign in with Google to access the admin dashboard</p>
+      <button id="google-signin">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google logo">
+        Sign in with Google
+      </button>
+      <div class="status" id="loginStatus"></div>
+    </div>
+
+    <div class="dashboard-container" id="dashboardContainer">
+      <button class="logout-btn" onclick="logout()">Logout</button>
+      <h1>Admin Dashboard</h1>
+      <div class="status" id="dashboardStatus"></div>
+
+      <h2>Student Records</h2>
+      <button id="refreshBtn">Refresh List</button>
+      <table id="studentsTable">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>College</th>
+            <th>Course</th>
+            <th>Year</th>
+            <th>Specialization</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTableBody">
+          <!-- Students will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Student</h2>
+        <form id="editForm">
+          <input type="hidden" id="editStudentId">
+          <div class="form-group">
+            <label for="editFullName">Full Name</label>
+            <input type="text" id="editFullName" required>
+          </div>
+          <div class="form-group">
+            <label for="editCollegeName">College Name</label>
+            <input type="text" id="editCollegeName" required>
+          </div>
+          <div class="form-group">
+            <label for="editCourse">Course</label>
+            <input type="text" id="editCourse" required>
+          </div>
+          <div class="form-group">
+            <label for="editCurrentYear">Current Year</label>
+            <input type="number" id="editCurrentYear" min="1" max="5" required>
+          </div>
+          <div class="form-group">
+            <label for="editSpecialization">Specialization</label>
+            <input type="text" id="editSpecialization">
+          </div>
+          <div class="form-group">
+            <label for="editMobileNumber">Mobile Number</label>
+            <input type="text" id="editMobileNumber" required>
+          </div>
+          <div class="form-group">
+            <label for="editEmailId">Email ID</label>
+            <input type="email" id="editEmailId" required>
+          </div>
+          <div class="photo-preview" id="editPhotoPreview">
+            <!-- Photo preview will appear here -->
+          </div>
+          <div class="edit-actions">
+            <button type="button" id="saveEditBtn">Save Changes</button>
+            <button type="button" id="cancelEditBtn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9erOtjg-xhoWm8RO2Adn_KDJOPml3FXE",
+      authDomain: "shop-dbf4b.firebaseapp.com",
+      projectId: "shop-dbf4b",
+      storageBucket: "shop-dbf4b.firebasestorage.app",
+      messagingSenderId: "321149556755",
+      appId: "1:321149556755:web:b48e8270e5af9fe51007e6"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // DOM elements
+    const loginContainer = document.getElementById('loginContainer');
+    const dashboardContainer = document.getElementById('dashboardContainer');
+    const googleSignInBtn = document.getElementById('google-signin');
+    const loginStatus = document.getElementById('loginStatus');
+    const dashboardStatus = document.getElementById('dashboardStatus');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const studentsTableBody = document.getElementById('studentsTableBody');
+    const editModal = document.getElementById('editModal');
+    const editForm = document.getElementById('editForm');
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const closeModal = document.querySelector('.close');
+    const editPhotoPreview = document.getElementById('editPhotoPreview');
+
+    // Global variable for token
+    let adminToken = null;
+    let currentEditId = null;
+
+    // Google Sign-In
+    googleSignInBtn.addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          return result.user.getIdToken();
+        })
+        .then((idToken) => {
+          adminToken = idToken;
+          showStatus(loginStatus, 'Login successful! Loading dashboard...', false);
+          loadDashboard();
+        })
+        .catch((error) => {
+          showStatus(loginStatus, 'Login failed: ' + error.message, true);
+        });
+    });
+
+    // Check if already logged in
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        user.getIdToken().then((idToken) => {
+          adminToken = idToken;
+          loadDashboard();
+        });
+      }
+    });
+
+    // Load dashboard
+    function loadDashboard() {
+      loginContainer.style.display = 'none';
+      dashboardContainer.style.display = 'block';
+      fetchStudents();
+    }
+
+    // Show status message
+    function showStatus(element, message, isError) {
+      element.textContent = message;
+      element.className = isError ? 'status error' : 'status success';
+      element.style.display = 'block';
+
+      setTimeout(() => {
+        element.style.display = 'none';
+      }, 5000);
+    }
+
+    // Fetch students
+    async function fetchStudents() {
+      showStatus(dashboardStatus, 'Loading students...', false);
+
+      try {
+        const response = await fetch('http://localhost:5000/api/admin/students', {
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch students');
+        }
+
+        const students = await response.json();
+        renderStudents(students);
+        showStatus(dashboardStatus, 'Students loaded successfully!', false);
+      } catch (error) {
+        showStatus(dashboardStatus, 'Error: ' + error.message, true);
+        console.error('Fetch error:', error);
+      }
+    }
+
+    // Render students in table with photos
+    function renderStudents(students) {
+      studentsTableBody.innerHTML = '';
+
+      students.forEach(student => {
+        const row = document.createElement('tr');
+
+        // Create photo cell
+        let photoCell;
+        if (student.photo) {
+          photoCell = `<td><img src="${student.photo}" class="student-photo" alt="${student.fullName}"></td>`;
+        } else {
+          photoCell = `<td><div class="no-photo"><i class="fas fa-user"></i></div></td>`;
+        }
+
+        row.innerHTML = `
+          ${photoCell}
+          <td>${student.fullName}</td>
+          <td>${student.collegeName}</td>
+          <td>${student.course}</td>
+          <td>${student.currentYear}</td>
+          <td>${student.specialization || '-'}</td>
+          <td>${student.mobileNumber}</td>
+          <td>${student.emailId}</td>
+          <td>
+            <button class="action-btn edit-btn" data-id="${student.id}">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="action-btn delete-btn" data-id="${student.id}">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </td>
+        `;
+        studentsTableBody.appendChild(row);
+      });
+
+      // Add event listeners to edit and delete buttons
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const studentId = e.target.closest('button').dataset.id;
+          openEditModal(studentId);
+        });
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const studentId = e.target.closest('button').dataset.id;
+          deleteStudent(studentId);
+        });
+      });
+    }
+
+    // Open edit modal
+    async function openEditModal(studentId) {
+      currentEditId = studentId;
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/admin/students/${studentId}`, {
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch student data');
+        }
+
+        const student = await response.json();
+
+        // Populate modal with student data
+        document.getElementById('editStudentId').value = studentId;
+        document.getElementById('editFullName').value = student.fullName;
+        document.getElementById('editCollegeName').value = student.collegeName;
+        document.getElementById('editCourse').value = student.course;
+        document.getElementById('editCurrentYear').value = student.currentYear;
+        document.getElementById('editSpecialization').value = student.specialization || '';
+        document.getElementById('editMobileNumber').value = student.mobileNumber;
+        document.getElementById('editEmailId').value = student.emailId;
+
+        // Show photo preview if available
+        if (student.photo) {
+          editPhotoPreview.innerHTML = `<img src="${student.photo}" class="photo-preview-img" alt="Student photo">`;
+        } else {
+          editPhotoPreview.innerHTML = '<p>No photo available</p>';
+        }
+
+        // Show modal
+        editModal.style.display = 'block';
+      } catch (error) {
+        showStatus(dashboardStatus, 'Error: ' + error.message, true);
+        console.error('Error fetching student:', error);
+      }
+    }
+
+    // Save edited student
+    saveEditBtn.addEventListener('click', async () => {
+      const updatedData = {
+        fullName: document.getElementById('editFullName').value,
+        collegeName: document.getElementById('editCollegeName').value,
+        course: document.getElementById('editCourse').value,
+        currentYear: parseInt(document.getElementById('editCurrentYear').value),
+        specialization: document.getElementById('editSpecialization').value || null,
+        mobileNumber: document.getElementById('editMobileNumber').value,
+        emailId: document.getElementById('editEmailId').value
+        // Note: We're not updating the photo in this simple implementation
+        // In a real app, you would add photo upload functionality here
+      };
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/admin/students/${currentEditId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${adminToken}`
+          },
+          body: JSON.stringify(updatedData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update student');
+        }
+
+        showStatus(dashboardStatus, 'Student updated successfully!', false);
+        editModal.style.display = 'none';
+        fetchStudents(); // Refresh the list
+      } catch (error) {
+        showStatus(dashboardStatus, 'Error: ' + error.message, true);
+        console.error('Update error:', error);
+      }
+    });
+
+    // Cancel edit
+    cancelEditBtn.addEventListener('click', () => {
+      editModal.style.display = 'none';
+    });
+
+    // Close modal when clicking X
+    closeModal.addEventListener('click', () => {
+      editModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+      if (event.target === editModal) {
+        editModal.style.display = 'none';
+      }
+    });
+
+    // Delete student
+    async function deleteStudent(studentId) {
+      if (!confirm('Are you sure you want to delete this student?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://hackthon-ujtu.onrender.com/api/admin/students/${studentId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${adminToken}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete student');
+        }
+
+        showStatus(dashboardStatus, 'Student deleted successfully!', false);
+        fetchStudents(); // Refresh the list
+      } catch (error) {
+        showStatus(dashboardStatus, 'Error: ' + error.message, true);
+        console.error('Delete error:', error);
+      }
+    }
+
+    // Refresh button
+    refreshBtn.addEventListener('click', fetchStudents);
+
+    // Logout function
+    window.logout = function() {
+      auth.signOut().then(() => {
+        adminToken = null;
+        loginContainer.style.display = 'block';
+        dashboardContainer.style.display = 'none';
+        showStatus(loginStatus, 'Logged out successfully', false);
+      }).catch((error) => {
+        showStatus(loginStatus, 'Logout failed: ' + error.message, true);
+      });
+    };
+  </script>
+</body>
+</html>
